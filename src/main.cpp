@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "gl_core_3_3.hpp"
+#include "gl_comp_3_1.hpp"
 #include <GLFW/glfw3.h>
 
 void glfw_err_callback(int code, const char* message);
@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 
     // Window hints to ensure GLFW context is proper.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
     // Attempt to create window based on context.
     hWindow = glfwCreateWindow(640, 480, "WINDOW", NULL, NULL);
