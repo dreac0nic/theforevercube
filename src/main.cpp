@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "gl_core_3_3.h"
+#include "gl_core_3_3.hpp"
 #include <GLFW/glfw3.h>
 
 void glfw_err_callback(int code, const char* message);
@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
     }
 
     // Window hints to ensure GLFW context is proper.
-    glfwWindowHints(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHints(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
     // Attempt to create window based on context.
     hWindow = glfwCreateWindow(640, 480, "WINDOW", NULL, NULL);
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     glfwMakeContextCurrent(hWindow);
 
     // Initialize GL using created loader.
-    if(ogl::LoadFunctions() == ogl::LOAD_FAILED) {
+    if(!gl::sys::LoadFunctions()) {
 	cerr << "Could not load GL!" << endl;
 
 	glfwTerminate();
