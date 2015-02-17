@@ -953,7 +953,7 @@ namespace gl
 		TEXTURE_FIXED_SAMPLE_LOCATIONS   = 0x9107,
 		TEXTURE_SAMPLES                  = 0x9106,
 		TIMEOUT_EXPIRED                  = 0x911B,
-		TIMEOUT_IGNORED                  = 0xFFFFFFFFFFFFFFFF,
+		TIMEOUT_IGNORED                  = 0xFFFFFFFFFFFFFFFFULL,
 		//TIMEOUT_IGNORED taken from ext: 3.2
 		TRIANGLES_ADJACENCY              = 0x000C,
 		TRIANGLE_STRIP_ADJACENCY         = 0x000D,
