@@ -1,3 +1,8 @@
+# PROJECT FOLDERS
+include/
+lib/
+build/
+
 # EDITOR DEFINES
 # EMACS
 \#*#
