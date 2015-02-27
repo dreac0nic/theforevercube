@@ -13,18 +13,10 @@ using namespace std;
 int main(int argc, char* argv[])
 {
     GLFWwindow* hWindow;
-
-    string glfwErrMessage;
     
     // Set error callback, because GLFW is being persnickety.
-    //glfwSetErrorCallback(glfw_err_callback);
-    glfwSetErrorCallback([&](int code, const char* message) -> void {
-	    stringstream buffer;
-	    
-	    buffer << "GLFW ERR[" << code << "]: " << message;
-	    
-	    glfwErrMessage = buffer.str();
-	});
+    glfwSetErrorCallback([](int code, const char* message) -> void {
+	    cerr << "GLFW ERR[" << code << "]: " << message; });
     
     // Load application framworks00...
     cerr << "INITIALIZING SYSTEMS" << endl
@@ -100,11 +92,12 @@ int main(int argc, char* argv[])
 	// Window housekeeping...
 	glfwSwapBuffers(hWindow);
 	glfwPollEvents();
+	
+	// SPAAAAAAAAACESHIP!
+	[=](){;;;;};
     }
 
     // Cleanup application and exit.
     glfwTerminate();
     return 0;
 }
-
-void glfw_err_callback(int code, const char* message) { cerr << "GLFW ERR[" << code << "]: " << message << endl; }
