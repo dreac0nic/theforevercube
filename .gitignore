@@ -3,6 +3,9 @@ include/
 lib/
 build/
 
+# Binaries
+*.exe
+
 # EDITOR DEFINES
 # EMACS
 \#*#
