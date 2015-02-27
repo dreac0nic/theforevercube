@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 
 #include "gl_comp_3_1.hpp"
 #include <GLFW/glfw3.h>
@@ -13,8 +14,17 @@ int main(int argc, char* argv[])
 {
     GLFWwindow* hWindow;
 
+    string glfwErrMessage;
+    
     // Set error callback, because GLFW is being persnickety.
-    glfwSetErrorCallback(glfw_err_callback);
+    //glfwSetErrorCallback(glfw_err_callback);
+    glfwSetErrorCallback([&](int code, const char* message) -> void {
+	    stringstream buffer;
+	    
+	    buffer << "GLFW ERR[" << code << "]: " << message;
+	    
+	    glfwErrMessage = buffer.str();
+	});
     
     // Load application framworks00...
     cerr << "INITIALIZING SYSTEMS" << endl
