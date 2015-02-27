@@ -3,6 +3,8 @@
 #include "gl_comp_3_1.hpp"
 #include <GLFW/glfw3.h>
 
+#define ERRLOG(errstr) std::cerr << "ERR [" << __FILE__ << ":" << __LINE__ << "] " << errstr << std::endl;
+
 void glfw_err_callback(int code, const char* message);
 
 using namespace std;
@@ -13,14 +15,27 @@ int main(int argc, char* argv[])
 
     // Set error callback, because GLFW is being persnickety.
     glfwSetErrorCallback(glfw_err_callback);
-
+    
+    // Load application framworks00...
+    cerr << "INITIALIZING SYSTEMS" << endl
+         << "--------------------" << endl;
+    
     // Initialize GLFW and check for errors.
+    cerr << "\tGLFW ... \t";
+    
     if(!glfwInit()) {
-	cerr << "Could not initialize GLFW!" << endl;
-
+	ERRLOG("Could not initialize GLFW!");
+	
+	glfwTerminate();
+	
 	return -1;
+    } else {
+	cerr << "OK" << endl;
     }
 
+    // Window Creation
+    cerr << "\tWindow ... \t";
+    
     // Window hints to ensure GLFW context is proper.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -28,22 +43,45 @@ int main(int argc, char* argv[])
     // Attempt to create window based on context.
     hWindow = glfwCreateWindow(640, 480, "WINDOW", NULL, NULL);
     if(!hWindow) {
-	cerr << "Could not create a window!" << endl;
+	ERRLOG("Could not create a window!");
 
 	glfwTerminate();
 	return -1;
+    } else {
+	cerr << "OK" << endl;
     }
 
     // Focus window context.
     glfwMakeContextCurrent(hWindow);
 
     // Initialize GL using created loader.
+    cerr << "\tLoad GL ... \t";
+    
     if(!gl::sys::LoadFunctions()) {
-	cerr << "Could not load GL!" << endl;
+	ERRLOG("Could not load OpenGL!");
 
+	glfwDestroyWindow(hWindow);
 	glfwTerminate();
 	return -1;
+    } else {
+	cerr << "OK [v" << gl::sys::GetMajorVersion() << "." << gl::sys::GetMinorVersion() << endl;
     }
+    
+    // Attempt to get context
+    cerr << "\tGL Context ... \t";
+    
+    if(!glfwGetCurrentContext()) {
+	ERRLOG("Could not get context!");
+	
+	glfwDestroyWindow(hWindow);
+	glfwTerminate();
+	return -1;
+    } else {
+	cerr << "OK [v" << (gl::GetString(gl::VERSION) != NULL ? (const char*)gl::GetString(gl::VERSION) : "NULL") << "; GLSL v" << gl::GetString(gl::SHADING_LANGUAGE_VERSION) << "]" << endl;
+    }
+    
+    cerr << "SYSTEM ... OK" << endl
+	 << "RUNNING" << endl;
 
     // Enter main loop of application.
     while(!glfwWindowShouldClose(hWindow)) {
