@@ -128,8 +128,8 @@ int main(int argc, char* argv[])
     gl::BufferData(gl::ARRAY_BUFFER, sizeof(points), points, gl::STATIC_DRAW);
 
     Program basicProgram;
-    basicProgram.compileShader("passthrough.glsl.vert");
-    basicProgram.compileShader("red.glsl.frag");
+    basicProgram.compileShader("src/shaders/passthrough.glsl.vert");
+    basicProgram.compileShader("src/shaders/red.glsl.frag");
     
     basicProgram.link();
     
