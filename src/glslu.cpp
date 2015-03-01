@@ -1,4 +1,4 @@
-#include "GLSLUtilities.hpp"
+#include "glslu.hpp"
 
 #include <iostream>
 #include <iomanip>

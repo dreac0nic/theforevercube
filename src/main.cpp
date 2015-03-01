@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "gl_comp_4_4.hpp"
+#include "gl_core_4_4.hpp"
 #include <GLFW/glfw3.h>
 
 #include "glslu.hpp"
