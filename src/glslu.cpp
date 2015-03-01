@@ -1,21 +1,34 @@
 #include "GLSLUtilities.hpp"
 
-#include <sys/stat.h>
-
+#include <iostream>
+#include <iomanip>
+#include <string>
 #include <fstream>
 #include <sstream>
 
+#include <glm/glm.hpp>
+
 using std::ifstream;
 using std::ios;
+using std::string;
+using std::setw;
+using std::endl;
+using std::stringstream;
+using glm::vec2;
+using glm::vec3;
+using glm::vec4;
+using glm::mat2;
+using glm::mat3;
+using glm::mat4;
 
-namespace GLSLUtilities
+namespace glslu
 {
     namespace ShaderInfo {
 	struct shader_file_extension {
-	    const char* extension;
+	    const string extension;
 	    ShaderType type;
 	};
-	
+
 	struct shader_file_extension extensions[] = {
 	    {".vs", VERTEX},
 	    {".vert", VERTEX},
@@ -72,27 +85,28 @@ namespace GLSLUtilities
 	
 	// If the name could not be found, query and store it for future checks.
 	if(position == uniformLocations.end())
-	    uniformLocations[name] = glGetUniformLocation(handle, name.c_str());
+	    uniformLocations[name] = gl::GetUniformLocation(handle, name.c_str());
 	
 	return uniformLocations[name];
     }
     
     // Check to see if a file exists
+    // NOTE: stat is considerably faster, look at using that if it isn't screwy as heck
     bool Program::fileExists(const string& filename)
     {
-	struct stat info;
-	int statReturn = -1;
-
-	// Query stat for info.
-	statReturn = stat(filename.c_str(), &info);
-	
-	return statReturn == 0; // Return true if success (stat == 0)
+	if(FILE *file = fopen(filename.c_str(), "r")) {
+	    fclose(file);
+	    
+	    return true;
+	} else {
+	    return false;
+	}
     }
     
     // Retrieve the file extensions of a filename
-    string getExtension(const string& filename)
+    string Program::getExtension(const string& filename)
     {
-	size_t location = filename.fine_last_of('.');
+	size_t location = filename.find_last_of('.');
 	
 	if(location != string::npos)
 	    return filename.substr(location, string::npos);
@@ -101,27 +115,29 @@ namespace GLSLUtilities
     }
     
     // String type translator
-    string getTypeString(GLenum type)
+    string Program::getTypeString(GLenum type)
     {
 	switch(type) {
-	case gl::FLOAT:         return "float"; break;
-	case gl::FLOAT_VEC2:    return "vec2"; break;
-	case gl::FLOAT_VEC3:    return "vec3"; break;
-	case gl::FLOAT_VEC4:    return "vec4"; break;
-	case gl::DOUBLE:        return "double"; break;
-	case gl::INT:           return "int"; break;
-	case gl::UNSIGNED_INT:  return "unsigned int"; break;
-	case gl::BOOL:          return "boolean"; break;
-	case gl::GL_FLOAT_MAT2: return "mat2"; break;
-	case gl::GL_FLOAT_MAT3: return "mat3"; break;
-	case gl::GL_FLOAT_MAT4: return "mat4"; break;
-	default:                return "?"; break;
+	case gl::FLOAT:        return "float"; break;
+	case gl::FLOAT_VEC2:   return "vec2"; break;
+	case gl::FLOAT_VEC3:   return "vec3"; break;
+	case gl::FLOAT_VEC4:   return "vec4"; break;
+	case gl::DOUBLE:       return "double"; break;
+	case gl::INT:          return "int"; break;
+	case gl::UNSIGNED_INT: return "unsigned int"; break;
+	case gl::BOOL:         return "boolean"; break;
+	case gl::FLOAT_MAT2:   return "mat2"; break;
+	case gl::FLOAT_MAT3:   return "mat3"; break;
+	case gl::FLOAT_MAT4:   return "mat4"; break;
+	default:               return "???"; break;
+	}
+    }
     
     // Type-smart shader compiler
     void Program::compileShader(const string& filename)
 	throw(ProgramException)
     {
-	int extensionCount = sizeof(ShaderInfo::extensions)/sizeof(shader_file_extension);
+	int extensionCount = sizeof(ShaderInfo::extensions)/sizeof(ShaderInfo::shader_file_extension);
 	
 	// Check for valid file extension.
 	string extension = getExtension(filename);
@@ -141,10 +157,10 @@ namespace GLSLUtilities
 	if(!found) {
 	    stringstream buffer;
 	    
-	    buffer << "Unrecognized shader extension: \'" << ext << "\'!" << endl
+	    buffer << "Unrecognized shader extension: \'" << extension << "\'!" << endl
 		   << "\tExpected: ";
 	    
-	    for(ext = 0; ext < extensionCount; ++ext)
+	    for(int ext = 0; ext < extensionCount; ++ext)
 		buffer << (ext != 0 ? ", " : "") << ShaderInfo::extensions[ext].extension;
 	    
 	    throw ProgramException(buffer.str());
@@ -155,14 +171,14 @@ namespace GLSLUtilities
     }
     
     // Source-retriving shader compiler
-    void Program::compileShader(const string& filename)
+    void Program::compileShader(const string& filename, ShaderType type)
 	throw(ProgramException)
     {
 	// Test file existance!
 	if(!fileExists(filename)) {
 	    stringstream buffer;
 	    
-	    buffer << "Could not find shader \"" << filaname << "\". Did it escape?";
+	    buffer << "Could not find shader \"" << filename << "\". Did it escape?";
 	    
 	    throw ProgramException(buffer.str());
 	}
@@ -176,7 +192,7 @@ namespace GLSLUtilities
 	}
 	
 	// Open file
-	ifstream shader(filename, ios::in);
+	ifstream shader(filename.c_str(), ios::in);
 	
 	if(!shader) {
 	    stringstream buffer;
@@ -193,11 +209,11 @@ namespace GLSLUtilities
 	// Cleanup and pass on contents.
 	shader.close();
 	
-	compileShader(source.str(), type, filename);
+	compileShaderSource(source.str(), type, filename);
     }
     
     // Compile shader with source
-    void Program::compileShader(const string& source, ShaderType type, const string& filename)
+    void Program::compileShaderSource(const string& source, ShaderType type, const string& filename)
 	throw(ProgramException)
     {
 	// Create shader program if necessary
@@ -219,9 +235,9 @@ namespace GLSLUtilities
 	
 	// Check for compile errors
 	int status;
-	gl::getShaderiv(shaderHandle, gl::COMPILE_STATUS, &status);
+	gl::GetShaderiv(shaderHandle, gl::COMPILE_STATUS, &status);
 	
-	if(status == gl::FALSE) {
+	if(status == gl::FALSE_) {
 	    int length = 0;
 	    string log;
 	    stringstream exceptionMessage;
@@ -240,7 +256,7 @@ namespace GLSLUtilities
 	    }
 	    
 	    // Construct exception...
-	    if(filename)
+	    if(filename != "")
 		exceptionMessage << "\"" << filename << "\" could not be compiled!";
 	    else
 		exceptionMessage << "Shader could not be compiled!";
@@ -249,10 +265,10 @@ namespace GLSLUtilities
 	    
 	    throw ProgramException(exceptionMessage.str());
 	} else
-	    glAttachShader(handle, shaderHandle);
+	    gl::AttachShader(handle, shaderHandle);
     }
     
-    Program::link(void)
+    void Program::link(void)
 	throw(ProgramException)
     {
 	if(linked) return;
@@ -305,6 +321,7 @@ namespace GLSLUtilities
 	    throw ProgramException("Program has not been linked!");
 	
 	// Validate program
+	GLint status;
 	gl::ValidateProgram(handle);
 	gl::GetProgramiv(handle, gl::VALIDATE_STATUS, &status);
 	
@@ -430,7 +447,7 @@ namespace GLSLUtilities
     void Program::setUniform(const string& name, const mat4& matrix)
     {
 	GLint location = getUniformLocation(name);
-	gl::UniformMatrix4fx(location, 1, gl::FALSE_, &matrix[0][0]);
+	gl::UniformMatrix4fv(location, 1, gl::FALSE_, &matrix[0][0]);
     }
     
     // Get a string containing all active uniforms
@@ -452,15 +469,15 @@ namespace GLSLUtilities
 	    GLint results[4];
 	    char* name;
 	    GLint nameLength = 0;
-	    gl::GetProgramResourceiv(handle, gl::UNIFORM, i, 4, properties, 4, NULL, results);
+	    gl::GetProgramResourceiv(handle, gl::UNIFORM, curr, 4, properties, 4, NULL, results);
 	    
 	    // Skip uniforms in blocks!
-	    if(results[3] != -1) conintue;
+	    if(results[3] != -1) continue;
 	    
 	    // Read results and store them away!
 	    nameLength = results[0] + 1;
 	    name = new char[nameLength];
-	    gl::GetProgramResourceName(handle, gl::UNIFORM, i, nameLength, NULL name);
+	    gl::GetProgramResourceName(handle, gl::UNIFORM, curr, nameLength, NULL, name);
 	    
 	    buffer << setw(5) << results[2] << setw(0) << " " << name << " (" << getTypeString(results[1]) << ")" << endl;
 	    
@@ -493,7 +510,7 @@ namespace GLSLUtilities
 	    uniformCount = blockInfo[0];
 	    
 	    // Get block name!
-	    GLint blockNameLength = blockInform[1] + 1;
+	    GLint blockNameLength = blockInfo[1] + 1;
 	    char* blockName = new char[blockNameLength];
 	    gl::GetProgramResourceName(handle, gl::UNIFORM_BLOCK, block, blockNameLength, NULL, blockName);
 	    
@@ -518,7 +535,7 @@ namespace GLSLUtilities
 		gl::GetProgramResourceName(handle, gl::UNIFORM, uniformIndex, uniformNameLength, NULL, uniformName);
 		
 		// Print out information
-		buffer << setw(5) << uniformIndex << setw(0) << " [" << uniform << "] " << name << " (" << getTypeString(results[1]) << ")" << endl;
+		buffer << setw(5) << uniformIndex << setw(0) << " [" << uniform << "] " << uniformName << " (" << getTypeString(results[1]) << ")" << endl;
 		
 		delete[] uniformName;
 	    }
@@ -530,13 +547,13 @@ namespace GLSLUtilities
     }
     
     // Get a string of all active attributes
-    void Program::getActiveAttribs(void)
+    string Program::getActiveAttribs(void)
     {
 	stringstream buffer;
 	
 	// Get the number of attributes active
 	GLint attributeCount;
-	gl::GetProgramInterfaceiv(handle, gl::PROGRAM_INPUT, gl::ACTIVE_RESOURCES, &attribuiteCount);
+	gl::GetProgramInterfaceiv(handle, gl::PROGRAM_INPUT, gl::ACTIVE_RESOURCES, &attributeCount);
 	
 	// Setup attribute query
 	GLenum properties[] = {gl::NAME_LENGTH, gl::TYPE, gl::LOCATION};
@@ -551,7 +568,7 @@ namespace GLSLUtilities
 	    // Get attribute name
 	    GLint nameLength = results[0] + 1;
 	    char* name = new char[nameLength];
-	    gl::GetProgramAttributeName(handle, gl::PROGRAM_INPUT, attribute, nameLength, NULL, name);
+	    gl::GetProgramResourceName(handle, gl::PROGRAM_INPUT, attribute, nameLength, NULL, name);
 	    
 	    buffer << setw(5) << results[2] << setw(0) << " " << name << "(" << getTypeString(results[1]) << ")" << endl;
 	    
