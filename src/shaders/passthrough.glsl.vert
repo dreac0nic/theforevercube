@@ -1,8 +1,8 @@
-#version 150
+#version 430
 
-in vec4 vPosition;
+in vec4 VertexPosition;
 
 void main()
 {
-	gl_Position = vPosition;
+	gl_Position = VertexPosition;
 }
