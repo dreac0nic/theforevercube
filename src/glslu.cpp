@@ -465,23 +465,27 @@ namespace glslu
 	// Acquire uniform info
 	buffer << "Active Uniforms" << endl;
 	
-	for(int curr = 0; curr < uniformCount; ++curr) {
-	    GLint results[4];
-	    char* name;
-	    GLint nameLength = 0;
-	    gl::GetProgramResourceiv(handle, gl::UNIFORM, curr, 4, properties, 4, NULL, results);
+	if(uniformCount <= 0) {
+	    buffer << "\tNONE" << endl;
+	} else {	
+	    for(int curr = 0; curr < uniformCount; ++curr) {
+		GLint results[4];
+		char* name;
+		GLint nameLength = 0;
+		gl::GetProgramResourceiv(handle, gl::UNIFORM, curr, 4, properties, 4, NULL, results);
 	    
-	    // Skip uniforms in blocks!
-	    if(results[3] != -1) continue;
+		// Skip uniforms in blocks!
+		if(results[3] != -1) continue;
 	    
-	    // Read results and store them away!
-	    nameLength = results[0] + 1;
-	    name = new char[nameLength];
-	    gl::GetProgramResourceName(handle, gl::UNIFORM, curr, nameLength, NULL, name);
+		// Read results and store them away!
+		nameLength = results[0] + 1;
+		name = new char[nameLength];
+		gl::GetProgramResourceName(handle, gl::UNIFORM, curr, nameLength, NULL, name);
 	    
-	    buffer << setw(5) << results[2] << setw(0) << " " << name << " (" << getTypeString(results[1]) << ")" << endl;
+		buffer << setw(5) << results[2] << setw(0) << " " << name << " (" << getTypeString(results[1]) << ")" << endl;
 	    
-	    delete[] name;
+		delete[] name;
+	    }
 	}
 	
 	return buffer.str();
@@ -501,46 +505,52 @@ namespace glslu
 	GLenum blockIndex[] = {gl::ACTIVE_VARIABLES};
 	GLenum properties[] = {gl::NAME_LENGTH, gl::TYPE, gl::BLOCK_INDEX};
 	
-	// Query for the information about each block!
-	for(int block = 0; block < blockCount; ++block) {
-	    GLint blockInfo[2];
-	    GLint uniformCount;
-	    gl::GetProgramResourceiv(handle, gl::UNIFORM_BLOCK, block, 2 , blockProperties, 2, NULL, blockInfo);
+	buffer << "Uniform Blocks" << endl;
+	
+	if(blockCount <= 0) {
+	    buffer << "\tNONE" << endl;
+	} else {
+	    // Query for the information about each block!
+	    for(int block = 0; block < blockCount; ++block) {
+		GLint blockInfo[2];
+		GLint uniformCount;
+		gl::GetProgramResourceiv(handle, gl::UNIFORM_BLOCK, block, 2 , blockProperties, 2, NULL, blockInfo);
 	    
-	    uniformCount = blockInfo[0];
+		uniformCount = blockInfo[0];
 	    
-	    // Get block name!
-	    GLint blockNameLength = blockInfo[1] + 1;
-	    char* blockName = new char[blockNameLength];
-	    gl::GetProgramResourceName(handle, gl::UNIFORM_BLOCK, block, blockNameLength, NULL, blockName);
+		// Get block name!
+		GLint blockNameLength = blockInfo[1] + 1;
+		char* blockName = new char[blockNameLength];
+		gl::GetProgramResourceName(handle, gl::UNIFORM_BLOCK, block, blockNameLength, NULL, blockName);
 	    
-	    // Print block name
-	    buffer << "Uniform block \"" << blockName << "\":" << endl;
+		// Print block name
+		buffer << "Uniform block \"" << blockName << "\":" << endl;
 	    
-	    delete[] blockName;
+		delete[] blockName;
 	    
-	    // Get the list of uniforms within the block
-	    GLint* uniformIndexes = new GLint[uniformCount];
-	    gl::GetProgramResourceiv(handle, gl::UNIFORM_BLOCK, block, 1, blockIndex, uniformCount, NULL, uniformIndexes);
+		// Get the list of uniforms within the block
+		GLint* uniformIndexes = new GLint[uniformCount];
+		gl::GetProgramResourceiv(handle, gl::UNIFORM_BLOCK, block, 1, blockIndex, uniformCount, NULL, uniformIndexes);
 	    
-	    // Iterate over each uniform and add it to the listing.
-	    for(int uniform = 0; uniform < uniformCount; ++uniform) {
-		GLint uniformIndex = uniformIndexes[uniform];
-		GLint results[3];
-		gl::GetProgramResourceiv(handle, gl::UNIFORM, uniformIndex, 3, properties, 3, NULL, results);
+		// Iterate over each uniform and add it to the listing.
+		for(int uniform = 0; uniform < uniformCount; ++uniform) {
+		    GLint uniformIndex = uniformIndexes[uniform];
+		    GLint results[3];
+		    gl::GetProgramResourceiv(handle, gl::UNIFORM, uniformIndex, 3, properties, 3, NULL, results);
 		
-		// Get uniform name
-		GLint uniformNameLength = results[0] + 1;
-		char* uniformName = new char[uniformNameLength];
-		gl::GetProgramResourceName(handle, gl::UNIFORM, uniformIndex, uniformNameLength, NULL, uniformName);
+		    // Get uniform name
+		    GLint uniformNameLength = results[0] + 1;
+		    char* uniformName = new char[uniformNameLength];
+		    gl::GetProgramResourceName(handle, gl::UNIFORM, uniformIndex, uniformNameLength, NULL, uniformName);
 		
-		// Print out information
-		buffer << setw(5) << uniformIndex << setw(0) << " [" << uniform << "] " << uniformName << " (" << getTypeString(results[1]) << ")" << endl;
+		    // Print out information
+		    buffer << setw(5) << uniformIndex << setw(0) << " [" << uniform << "] " << uniformName << " (" << getTypeString(results[1]) << ")" << endl;
 		
-		delete[] uniformName;
+		    delete[] uniformName;
+		}
+	    
+		delete[] uniformIndexes;
 	    }
-	    
-	    delete[] uniformIndexes;
 	}
 	
 	return buffer.str();
@@ -561,18 +571,22 @@ namespace glslu
 	// Print and query each attribute
 	buffer << "Active Attributes" << endl;
 	
-	for(int attribute = 0; attribute < attributeCount; ++attribute) {
-	    GLint results[3];
-	    gl::GetProgramResourceiv(handle, gl::PROGRAM_INPUT, attribute, 3, properties, 3, NULL, results);
+	if(attributeCount <= 0) {
+	    buffer << "\tNONE" << endl;
+	} else {
+	    for(int attribute = 0; attribute < attributeCount; ++attribute) {
+		GLint results[3];
+		gl::GetProgramResourceiv(handle, gl::PROGRAM_INPUT, attribute, 3, properties, 3, NULL, results);
 	    
-	    // Get attribute name
-	    GLint nameLength = results[0] + 1;
-	    char* name = new char[nameLength];
-	    gl::GetProgramResourceName(handle, gl::PROGRAM_INPUT, attribute, nameLength, NULL, name);
+		// Get attribute name
+		GLint nameLength = results[0] + 1;
+		char* name = new char[nameLength];
+		gl::GetProgramResourceName(handle, gl::PROGRAM_INPUT, attribute, nameLength, NULL, name);
 	    
-	    buffer << setw(5) << results[2] << setw(0) << " " << name << "(" << getTypeString(results[1]) << ")" << endl;
+		buffer << setw(5) << results[2] << setw(0) << " " << name << "(" << getTypeString(results[1]) << ")" << endl;
 	    
-	    delete[] name;
+		delete[] name;
+	    }
 	}
 	
 	return buffer.str();
