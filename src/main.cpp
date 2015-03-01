@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "gl_comp_3_1.hpp"
+#include "gl_comp_4_4.hpp"
 #include <GLFW/glfw3.h>
 
 #define ERRLOG(errstr) std::cerr << "ERR [" << __FILE__ << ":" << __LINE__ << "] " << errstr << std::endl;
