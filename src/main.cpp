@@ -1,6 +1,9 @@
 #include <iostream>
 #include <sstream>
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "gl_core_4_4.hpp"
 #include <GLFW/glfw3.h>
 
@@ -11,6 +14,8 @@
 void glfw_err_callback(int code, const char* message);
 
 using namespace std;
+using glm::vec2;
+using glslu::Program;
 
 int main(int argc, char* argv[])
 {
