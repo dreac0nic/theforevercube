@@ -1086,7 +1086,7 @@ namespace gl
 	typedef void (CODEGEN_FUNCPTR *PFNGETINTERNALFORMATIV)(GLenum, GLenum, GLenum, GLsizei, GLint *);
 	PFNGETINTERNALFORMATIV GetInternalformativ = 0;
 	typedef void (CODEGEN_FUNCPTR *PFNMEMORYBARRIER)(GLbitfield);
-	PFNMEMORYBARRIER MemoryBarrier = 0;
+	PFNMEMORYBARRIER MemoryBarrier_ = 0;
 	typedef void (CODEGEN_FUNCPTR *PFNTEXSTORAGE1D)(GLenum, GLsizei, GLenum, GLsizei);
 	PFNTEXSTORAGE1D TexStorage1D = 0;
 	typedef void (CODEGEN_FUNCPTR *PFNTEXSTORAGE2D)(GLenum, GLsizei, GLenum, GLsizei, GLsizei);
@@ -2173,8 +2173,8 @@ namespace gl
 		if(!GetActiveAtomicCounterBufferiv) ++numFailed;
 		GetInternalformativ = reinterpret_cast<PFNGETINTERNALFORMATIV>(IntGetProcAddress("glGetInternalformativ"));
 		if(!GetInternalformativ) ++numFailed;
-		MemoryBarrier = reinterpret_cast<PFNMEMORYBARRIER>(IntGetProcAddress("glMemoryBarrier"));
-		if(!MemoryBarrier) ++numFailed;
+		MemoryBarrier_ = reinterpret_cast<PFNMEMORYBARRIER>(IntGetProcAddress("glMemoryBarrier"));
+		if(!MemoryBarrier_) ++numFailed;
 		TexStorage1D = reinterpret_cast<PFNTEXSTORAGE1D>(IntGetProcAddress("glTexStorage1D"));
 		if(!TexStorage1D) ++numFailed;
 		TexStorage2D = reinterpret_cast<PFNTEXSTORAGE2D>(IntGetProcAddress("glTexStorage2D"));
