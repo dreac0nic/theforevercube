@@ -133,8 +133,14 @@ int main(int argc, char* argv[])
     
     basicProgram.link();
     
+    cout << basicProgram.getActiveUniforms() << endl
+	 << basicProgram.getActiveUniformBlocks() << endl
+	 << basicProgram.getActiveAttribs() << endl;
+    
     if(basicProgram.isLinked())
 	basicProgram.use();
+    
+    gl::ClearColor(0.95f, 0.95f, 0.95f, 1.0f);
 
     // Enter main loop of application.
     while(!glfwWindowShouldClose(hWindow)) {
