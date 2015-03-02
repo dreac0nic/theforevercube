@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
     cerr << "\tWindow ... \t";
     
     // Window hints to ensure GLFW context is proper.
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 
     // Attempt to create window based on context.
     hWindow = glfwCreateWindow(640, 480, "WINDOW", NULL, NULL);
@@ -118,6 +118,17 @@ int main(int argc, char* argv[])
 	points[point] = (points[point - 1] + vertices[vertex])/2.0f;
     }
     
+    // Generate position data in normal array:
+    float pointData[pointCount*2];
+    
+    for(int point = 0; point < pointCount; point++) {
+	pointData[point*2] = points[point].x;
+	pointData[point*2 + 1] = points[point].y;
+    }
+    
+    delete[] points;
+    
+    // Setup buffers and bind to shader attribute.
     GLuint vao;
     gl::GenBuffers(1, &vao);
     gl::BindVertexArray(vao);
@@ -125,7 +136,7 @@ int main(int argc, char* argv[])
     GLuint buffer;
     gl::GenBuffers(1, &buffer);
     gl::BindBuffer(gl::ARRAY_BUFFER, buffer);
-    gl::BufferData(gl::ARRAY_BUFFER, sizeof(points), points, gl::STATIC_DRAW);
+    gl::BufferData(gl::ARRAY_BUFFER, sizeof(pointData), pointData, gl::STATIC_DRAW);
 
     Program basicProgram;
     basicProgram.compileShader("src/shaders/passthrough.glsl.vert");
@@ -140,11 +151,22 @@ int main(int argc, char* argv[])
     if(basicProgram.isLinked())
 	basicProgram.use();
     
+    // Bind the vertexes to the input buffer;
+    gl::VertexAttribFormat(0, 2, gl::FLOAT, gl::FALSE_, 0);
+    gl::VertexAttribBinding(0, 0);
+    
     gl::ClearColor(0.95f, 0.95f, 0.95f, 1.0f);
 
     // Enter main loop of application.
     while(!glfwWindowShouldClose(hWindow)) {
+	// Clear window
+	gl::Clear(gl::COLOR_BUFFER_BIT);
+	
 	// RENDER
+	gl::DrawArrays(gl::POINTS, 0, pointCount);
+	
+	// Flush ouput
+	gl::Flush();
 
 	// Window housekeeping...
 	glfwSwapBuffers(hWindow);
