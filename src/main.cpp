@@ -171,7 +171,6 @@ int main(int argc, char* argv[])
 	gl::Clear(gl::COLOR_BUFFER_BIT);
 	
 	// RENDER
-	gl::BindVertexArray(vao);
 	gl::DrawArrays(gl::POINTS, 0, pointCount);
 	
 	// Flush ouput
