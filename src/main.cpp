@@ -143,19 +143,25 @@ int main(int argc, char* argv[])
 	basicProgram.use();
     
     // Setup buffers and bind to shader attribute.
-    GLuint vao;
-    gl::GenBuffers(1, &vao);
-    gl::BindVertexArray(vao);
-    
     GLuint buffer;
     gl::GenBuffers(1, &buffer);
+    
+    // Populate buffer
     gl::BindBuffer(gl::ARRAY_BUFFER, buffer);
     gl::BufferData(gl::ARRAY_BUFFER, 2*pointCount*sizeof(float), pointData, gl::STATIC_DRAW);
     
     // Bind the vertexes to the input buffer;
+    GLuint vao;
+    gl::GenVertexArrays(1, &vao);
+    gl::BindVertexArray(vao);
+    
+    // Enable VAO for position
     gl::EnableVertexAttribArray(0);
-    gl::VertexAttribFormat(0, 2, gl::FLOAT, gl::FALSE_, 0);
-    gl::VertexAttribBinding(0, 0);
+    
+    // Populate data
+    gl::VertexAttribPointer(0, 2, gl::FLOAT, gl::FALSE_, 0, NULL);
+    //gl::VertexAttribFormat(0, 2, gl::FLOAT, gl::FALSE_, 0);
+    //gl::VertexAttribBinding(0, 0);
     
     gl::ClearColor(0.95f, 0.95f, 0.95f, 1.0f);
 
@@ -165,6 +171,7 @@ int main(int argc, char* argv[])
 	gl::Clear(gl::COLOR_BUFFER_BIT);
 	
 	// RENDER
+	gl::BindVertexArray(vao);
 	gl::DrawArrays(gl::POINTS, 0, pointCount);
 	
 	// Flush ouput
