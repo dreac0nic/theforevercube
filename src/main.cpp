@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
     }
     
     // Generate position data in normal array:
-    float pointData[pointCount*2];
+    float pointData[2*pointCount];
     
     for(int point = 0; point < pointCount; point++) {
 	pointData[point*2] = points[point].x;
@@ -128,16 +128,7 @@ int main(int argc, char* argv[])
     
     delete[] points;
     
-    // Setup buffers and bind to shader attribute.
-    GLuint vao;
-    gl::GenBuffers(1, &vao);
-    gl::BindVertexArray(vao);
-    
-    GLuint buffer;
-    gl::GenBuffers(1, &buffer);
-    gl::BindBuffer(gl::ARRAY_BUFFER, buffer);
-    gl::BufferData(gl::ARRAY_BUFFER, sizeof(pointData), pointData, gl::STATIC_DRAW);
-
+    // Setup teh shaders
     Program basicProgram;
     basicProgram.compileShader("src/shaders/passthrough.glsl.vert");
     basicProgram.compileShader("src/shaders/red.glsl.frag");
@@ -151,7 +142,18 @@ int main(int argc, char* argv[])
     if(basicProgram.isLinked())
 	basicProgram.use();
     
+    // Setup buffers and bind to shader attribute.
+    GLuint vao;
+    gl::GenBuffers(1, &vao);
+    gl::BindVertexArray(vao);
+    
+    GLuint buffer;
+    gl::GenBuffers(1, &buffer);
+    gl::BindBuffer(gl::ARRAY_BUFFER, buffer);
+    gl::BufferData(gl::ARRAY_BUFFER, 2*pointCount*sizeof(float), pointData, gl::STATIC_DRAW);
+    
     // Bind the vertexes to the input buffer;
+    gl::EnableVertexAttribArray(0);
     gl::VertexAttribFormat(0, 2, gl::FLOAT, gl::FALSE_, 0);
     gl::VertexAttribBinding(0, 0);
     
