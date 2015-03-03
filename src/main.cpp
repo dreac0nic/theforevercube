@@ -93,11 +93,17 @@ int main(int argc, char* argv[])
 	 << "RUNNING" << endl;
     
     // Setup for Sierpinski Gasket
-    vec2 vertices[3] =2 {
+    float vertData[6];
+    vec2 vertices[3] = {
 	vec2(-1.0f, -1.0f),
 	vec2( 0.0f,  1.0f),
 	vec2( 1.0f, -1.0f)
     };
+    
+    for(int vert = 0; vert < 3; ++vert) {
+	vertData[2*vert] = vertices[vert].x;
+	vertData[2*vert + 1] = vertices[vert].y;
+    }
     
     // Setup teh shaders
     Program basicProgram;
@@ -114,7 +120,24 @@ int main(int argc, char* argv[])
 	basicProgram.use();
     
     // Setup buffers and bind to shader attribute.
+    GLuint vertBuffer;
+    gl::GenBuffers(1, &vertBuffer);
     
+    // Bind data to vertBuffer
+    gl::BindBuffer(gl::ARRAY_BUFFER, vertBuffer);
+    gl::BufferData(gl::ARRAY_BUFFER, 6*sizeof(float), vertData, gl::STATIC_DRAW);
+    
+    // Setup vertex array object
+    GLuint vaoHandle;
+    gl::GenVertexArrays(1, &vaoHandle);
+    gl::BindVertexArray(vaoHandle);
+    
+    // Enable the position data
+    gl::EnableVertexAttribArray(0);
+    
+    // Fill in buffer data
+    gl::BindBuffer(gl::ARRAY_BUFFER, vertBuffer);
+    gl::VertexAttribPointer(0, 2, gl::FLOAT, gl::FALSE_, 0, NULL);
     
     gl::ClearColor(0.95f, 0.95f, 0.95f, 1.0f);
 
@@ -124,7 +147,8 @@ int main(int argc, char* argv[])
 	gl::Clear(gl::COLOR_BUFFER_BIT);
 	
 	// RENDER
-	gl::DrawArrays(gl::POINTS, 0, pointCount);
+	gl::BindVertexArray(vaoHandle);
+	gl::DrawArrays(gl::TRIANGLES, 0, 3);
 	
 	// Flush ouput
 	gl::Flush();
