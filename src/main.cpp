@@ -93,40 +93,11 @@ int main(int argc, char* argv[])
 	 << "RUNNING" << endl;
     
     // Setup for Sierpinski Gasket
-    unsigned int pointCount = 1;
-    vec2* points;
-    vec2 vertices[3] = {
+    vec2 vertices[3] =2 {
 	vec2(-1.0f, -1.0f),
 	vec2( 0.0f,  1.0f),
 	vec2( 1.0f, -1.0f)
     };
-    
-    srand(time(NULL));
-    
-    // Get the number of points to generate
-    cout << "Please enter the number of points to generate: ";
-    cin >> pointCount;
-    
-    points = new vec2[pointCount];
-    
-    // Set first point and calculate the rest of the points from there.
-    points[0] = vec2(0.25f, 0.5f);
-    
-    for(int point = 1; point < pointCount; ++point) {
-	int vertex = rand()%3;
-	
-	points[point] = (points[point - 1] + vertices[vertex])/2.0f;
-    }
-    
-    // Generate position data in normal array:
-    float pointData[2*pointCount];
-    
-    for(int point = 0; point < pointCount; point++) {
-	pointData[point*2] = points[point].x;
-	pointData[point*2 + 1] = points[point].y;
-    }
-    
-    delete[] points;
     
     // Setup teh shaders
     Program basicProgram;
@@ -143,19 +114,7 @@ int main(int argc, char* argv[])
 	basicProgram.use();
     
     // Setup buffers and bind to shader attribute.
-    GLuint vao;
-    gl::GenBuffers(1, &vao);
-    gl::BindVertexArray(vao);
     
-    GLuint buffer;
-    gl::GenBuffers(1, &buffer);
-    gl::BindBuffer(gl::ARRAY_BUFFER, buffer);
-    gl::BufferData(gl::ARRAY_BUFFER, 2*pointCount*sizeof(float), pointData, gl::STATIC_DRAW);
-    
-    // Bind the vertexes to the input buffer;
-    gl::EnableVertexAttribArray(0);
-    gl::VertexAttribFormat(0, 2, gl::FLOAT, gl::FALSE_, 0);
-    gl::VertexAttribBinding(0, 0);
     
     gl::ClearColor(0.95f, 0.95f, 0.95f, 1.0f);
 
